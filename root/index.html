@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private Access 🔒</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Overlay to make background look like a blurred lockscreen */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(8px);
+    }
+
+    .lock-container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 40px 30px;
+      border-radius: 30px;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+      width: min(90%, 350px);
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-img {
+      width: 80px;
+      height: 80px;
+      background: #fff;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: white;
+      margin-bottom: 25px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    #passwordInput {
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: 25px;
+      border: none;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
+      text-align: center;
+      outline: none;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+
+    #passwordInput:focus {
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    }
+
+    .unlock-btn {
+      background: #ff4d6d;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+      width: 100%;
+    }
+
+    .unlock-btn:hover {
+      background: #ff758f;
+    }
+
+    /* Error Shake Animation */
+    .shake {
+      animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+    }
+
+    .hint {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="overlay"></div>
+
+  <div class="lock-container" id="container">
+    <h2>Hola, Pamiii</h2>
+    <input type="password" id="passwordInput" placeholder="Introducir contraseña">
+    <button class="unlock-btn" onclick="checkPassword()">Descubrir</button>
+    <p class="hint">Pista: Nombre de tu osito de peluche</p>
+  </div>
+
+  <script>
+    function checkPassword() {
+      const input = document.getElementById("passwordInput").value;
+      const container = document.getElementById("container");
+
+      if (input === "Dia") {
+        // Success: Transition out and redirect
+        container.style.transition = "opacity 0.5s";
+        container.style.opacity = "0";
+        setTimeout(() => {
+          window.location.href = "unlocked.html";
+        }, 500);
+      } else {
+        // Failure: Shake animation
+        container.classList.add("shake");
+        document.getElementById("passwordInput").value = "";
+        document.getElementById("passwordInput").placeholder = "Incorrecto, intente de nuevo!";
+        
+        // Remove shake class so it can be added again later
+        setTimeout(() => {
+          container.classList.remove("shake");
+        }, 400);
+      }
+    }
+
+    // Allow pressing "Enter" key to unlock
+    document.getElementById("passwordInput").addEventListener("keyup", function(event) {
+      if (event.key === "Enter") {
+        checkPassword();
+      }
+    });
+  </script>
+</body>
+</html>

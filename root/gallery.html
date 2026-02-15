@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Our Memories 💖</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&family=Yanone+Kaffeesatz:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    :root {
+      --partWidth: 90px;   /* Adjusted width for portrait */
+      --partHeight: 120px; /* Adjusted height for portrait 9:16 vibe */
+      --margins: 2px;
+      --rows: 6;           /* Changed from 4 to 6 */
+      --cols: 4;           /* Changed from 6 to 4 */
+      --transTime: 0.5s;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
+      background-size: 400% 400%;
+      animation: bgMove 12s ease infinite;
+      font-family: "Poppins", sans-serif;
+      overflow-x: hidden;
+	  overflow: hidden;
+    }
+
+    @keyframes bgMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .demo__help {
+      margin-bottom: 15px;
+      font-size: 28px;
+      font-family: "Yanone Kaffeesatz", sans-serif;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    .demo__gallery {
+      display: grid;
+      grid-template-columns: repeat(var(--cols), var(--partWidth)); 
+      gap: calc(var(--margins) * 2);
+      padding: 10px;
+      perspective: 1000px;
+      justify-content: center;
+    }
+
+    .demo__part {
+      position: relative;
+      width: var(--partWidth);
+      height: var(--partHeight);
+      transform-style: preserve-3d;
+      transition: transform var(--transTime) cubic-bezier(0.4, 0, 0.2, 1);
+      transform: rotateY(-180deg); 
+    }
+
+    .demo__part.show-front {
+      transform: rotateY(0deg);
+    }
+
+    .demo__part-front, .demo__part-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .demo__part-front {
+      background-size: cover;
+      background-position: center;
+      z-index: 2;
+    }
+
+    .demo__part-back {
+      transform: rotateY(180deg);
+      overflow: hidden;
+    } 
+
+    .demo__part-back-inner {
+      /* Width and Height updated to match portrait grid */
+      width: calc((var(--partWidth) * var(--cols)) + (var(--margins) * 2 * (var(--cols) - 1)));
+      height: calc((var(--partHeight) * var(--rows)) + (var(--margins) * 2 * (var(--rows) - 1)));
+      background-size: cover;
+      background-position: center;
+    }
+
+    .heart {
+      position: absolute;
+      bottom: -20px;
+      animation: floatUp linear forwards;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(0) scale(1); opacity: 1; }
+      to { transform: translateY(-120vh) scale(1.8); opacity: 0; }
+    }
+
+    @media (max-width: 500px) {
+      .demo { transform: scale(0.8); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="demo">
+    <div class="demo__help">Elige un recuerdo, Pamiii</div>
+    <div class="demo__gallery"></div>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+      const rows = 6; // Swapped to 6
+      const cols = 4; // Swapped to 4
+      const staggerTime = 60; 
+      
+      const urls = [
+        "images/png/IMG_1407.png",
+		"images/png/IMG_1447.png",
+        "images/png/IMG_1467.png",
+		"images/png/IMG_1513.png",
+		"images/png/IMG_1561.png",
+		"images/png/IMG_1589.png",
+		"images/png/IMG_1778.png",
+		"images/png/IMG_1846.png",
+		"images/png/IMG_2287.png",
+		"images/png/IMG_2449.png",
+		"images/png/IMG_2616.png",
+		"images/png/IMG_2739.png",
+		"images/png/IMG_2764.png",
+		"images/png/IMG_2809.png",
+		"images/png/IMG_2810.png",
+		"images/png/IMG_2815.png",
+		"images/png/IMG_2819.png",
+		"images/png/IMG_2823.png",
+		"images/png/IMG_2831.png",
+		"images/png/IMG_2860.png",
+		"images/png/IMG_2899.png",
+		"images/png/IMG_2934.png",
+		"images/png/IMG_2945.png",
+		"images/png/IMG_3045.png"
+      ];
+
+      const $gallery = $(".demo__gallery");
+      const $help = $(".demo__help");
+      let isBackVisible = false;
+
+      // 1. Build Grid
+      for (let r = 1; r <= rows; r++) {
+        for (let c = 1; c <= cols; c++) {
+          const $part = $(`
+            <div class="demo__part demo__part-${r}-${c} show-front" data-row="${r}" data-col="${c}">
+              <div class="demo__part-front"></div>
+              <div class="demo__part-back">
+                <div class="demo__part-back-inner"></div>
+              </div>
+            </div>
+          `);
+          
+          // Math for background offset (must match partWidth/partHeight + gap)
+          const x = (c - 1) * (90 + 4); 
+          const y = (r - 1) * (120 + 4);
+          
+          $part.find(".demo__part-back-inner").css({
+            "transform": `translate(-${x}px, -${y}px)`
+          });
+          
+          $gallery.append($part);
+        }
+      }
+
+      $(".demo__part").each(function(i) {
+        $(this).find(".demo__part-front").css("background-image", `url(${urls[i]})`);
+      });
+
+      $gallery.on("click", ".demo__part-front", function() {
+        if (isBackVisible) return;
+        isBackVisible = true;
+        const img = $(this).css("background-image");
+        $(".demo__part-back-inner").css("background-image", img);
+        $help.text("Haz clic para volver");
+        const r = parseInt($(this).parent().data("row"));
+        const c = parseInt($(this).parent().data("col"));
+        wave(r, c, false);
+      });
+
+      $gallery.on("click", ".demo__part-back", function() {
+        if (!isBackVisible) return;
+        isBackVisible = false;
+        $help.text("Elige un recuerdo, Pamiii");
+        const r = parseInt($(this).parent().data("row"));
+        const c = parseInt($(this).parent().data("col"));
+        wave(r, c, true);
+      });
+
+      function wave(r, c, showFront) {
+        const visited = new Set();
+        const queue = [{r, c, d: 0}];
+        visited.add(`${r}-${c}`);
+        while(queue.length > 0) {
+          const curr = queue.shift();
+          const $tile = $(`.demo__part-${curr.r}-${curr.c}`);
+          setTimeout(() => {
+            if (showFront) $tile.addClass("show-front");
+            else $tile.removeClass("show-front");
+          }, curr.d * staggerTime);
+          const neighbors = [[0,1], [0,-1], [1,0], [-1,0]];
+          for (let [dr, dc] of neighbors) {
+            const nr = curr.r + dr;
+            const nc = curr.c + dc;
+            if (nr >= 1 && nr <= rows && nc >= 1 && nc <= cols && !visited.has(`${nr}-${nc}`)) {
+              visited.add(`${nr}-${nc}`);
+              queue.push({r: nr, c: nc, d: curr.d + 1});
+            }
+          }
+        }
+      }
+
+      setInterval(() => {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerHTML = "💗";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.fontSize = Math.random() * 20 + 10 + "px";
+        heart.style.animationDuration = Math.random() * 3 + 4 + "s";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 6000);
+      }, 400);
+    });
+  </script>
+</body>
+</html>
