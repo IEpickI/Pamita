@@ -1,0 +1,186 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    text-align: center;
+	overflow: hidden;
+    position: relative;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 40px 30px;
+    border-radius: 30px;
+    box-shadow: 0 10px 30px rgba(255, 117, 140, 0.2);
+    max-width: 400px;
+    width: 90%;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	backdrop-filter: blur(20px);
+}
+
+h1 { color: #ff4d6d; margin-top: 0; }
+p { color: #555; }
+
+/* Envelope CSS Art & Animation */
+/* Wrapper for interaction and scaling */
+.envelope-wrapper {
+    cursor: pointer;
+    margin: 80px auto; /* Increased margin to account for the paper sliding up */
+    width: 98px;
+    height: 66px;
+    position: relative;
+    transform: scale(1.5); /* Scales up your custom design so it's easier to tap */
+    transition: transform 0.3s ease;
+}
+
+/* Optional: Slight "pop" effect when hovered */
+.envelope-wrapper:hover {
+    transform: scale(1.6);
+}
+
+/* --- Your Custom Envelope CSS --- */
+.envelope {
+    position: relative;
+    width: 98px;
+    height: 66px;
+    background: #6580b5;
+    border-radius: 0 0 5px 5px;
+    box-shadow: 0 0 1px #6580b5 inset;
+}
+
+.envelope:before, .envelope:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 0 solid transparent;
+    border-width: 33px 49px;
+}
+
+/* The Flap (.envelope:before) */
+.envelope:before {
+    border-top-color: #3963b8; /* Start pointing down (closed) */
+    top: 0;
+    left: 0px;
+    z-index: 5; /* Keep above the paper when closed */
+    transform-origin: top;
+    transition: transform 0.4s ease-in-out, z-index 0.4s;
+}
+
+/* The Front Pocket (.envelope:after) */
+.envelope:after {
+    border-right-color: #5b78b3;
+    border-left-color: #6580b5;
+    border-bottom-color: #6580b5;
+    top: 0;
+    left: 0;
+    border-radius: 0 0 5px 5px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.25);
+    z-index: 4; /* Keep in front of the paper */
+}
+
+/* The Letter Inside */
+.paper {
+    background: #fff;
+    width: 87px;
+    height: 60px;
+    margin: 0 auto;
+    border-radius: 5px;
+    position: absolute;
+    left: 6px;
+    top: 0; /* Start hidden completely inside */
+    box-shadow: 0 1px 1px rgba(0,0,0,0.25);
+    z-index: 3; /* Behind the front pocket */
+}
+
+/* Paper Details (Lines) */
+.paper:before, .paper:after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    background: #5b78b3;
+    height: 4px;
+    border-radius: 5px;
+}
+
+.paper:before {
+    top: 14px;
+    width: 31px;
+}
+
+.paper:after {
+    right: 12px;
+    top: 28px;
+    box-shadow:
+        0 8px 0 #e3f1fc,
+        0 16px 0 #e3f1fc,
+        0 24px 0 #e3f1fc,
+        0 30px 0 #e3f1fc;
+}
+
+/* --- The Animation Logic --- */
+
+/* 1. Open the flap */
+.envelope-wrapper:hover .envelope:before {
+    transform: rotateX(180deg);
+    z-index: 2; /* Send flap behind the paper so the paper can slide over it */
+}
+
+/* 2. Slide the paper up (matches your original -33px position) */
+.envelope-wrapper:hover .paper {
+    top: -33px; 
+	transition: top 0.8s;
+}
+
+/* The front pocket of the envelope */
+.pocket {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 100px solid #ff8fa3;
+    border-right: 100px solid #ff8fa3;
+    border-bottom: 70px solid #ff758c;
+    z-index: 4;
+    border-radius: 0 0 10px 10px;
+}
+
+#status-message {
+    color: #c9184a;
+    font-weight: bold;
+    min-height: 24px;
+    margin-top: 20px;
+}
+
+.floating-asset {
+    position: fixed;
+    pointer-events: none; /* User can click "through" them to hit the envelope */
+    z-index: -1; 
+    opacity: 0.5;
+    user-select: none;
+}
+
+.axolotl {
+      position: absolute;
+      bottom: -20px;
+      animation: floatUp linear forwards;
+      pointer-events: none;
+      filter: blur(0.3px);
+	  z-index: -1;
+    }
+
+    @keyframes floatUp {
+      from {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      to {
+        transform: translateY(-120vh) scale(1.8);
+        opacity: 0;
+      }
+    }
