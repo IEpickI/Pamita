@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #fff0f3;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            overflow: hidden; /* Prevents the whole page from bouncing on mobile */
+        }
+
+        .scratch-card-container {
+            position: relative;
+            width: 320px;
+            height: 420px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            background: white;
+            /* This prevents the canvas from spilling outside the rounded corners */
+            overflow: hidden; 
+        }
+
+        /* 1. The Hidden Letter (Underneath) */
+        .secret-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+			z-index: 1;
+        }
+
+        .secret-content h1 {
+            color: #ff4d6d;
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        .secret-content p {
+            color: #444;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        /* 2. The Scratch-Off Canvas (On Top) */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2; /* Keeps the canvas above the secret text */
+            cursor: pointer;
+			z-index: 2;
+        }
+		.snack-container {
+			position: relative;
+			margin-top: 10px; /* Space from the text */
+			margin-bottom: 20px; /* Space from the text */
+			width: 200px;
+			height: 180px;
+		}
+
+		.popcorn {
+			font-size: 100px;
+			position: absolute;
+			bottom: -10px;
+			left: 25px; /* Nudged to the left */
+			pointer-events: none;
+		}
+
+		.salsa-bottle {
+			position: absolute;
+			width: 120px; /* Adjust based on your image size */
+			bottom: 80px;
+			right: 5px; /* Positioned to the right to "pour" over the popcorn */
+			z-index: 3;
+			/* This makes the bottle look like it's tilted to pour */
+			transform: rotate(-130deg); 
+			animation: pourSalsa 1.5s infinite ease-in-out;
+		}
+
+		@keyframes pourSalsa {
+			0%, 100% {
+				transform: translateY(0) rotate(-130deg);
+			}
+			50% {
+				transform: translateY(-15px) rotate(-145deg); /* Moves up and tilts more */
+			}
+		}
+    </style>
+</head>
+<body>
+
+    <div class="scratch-card-container">
+        <div class="secret-content">
+            <h1>Noche de cine! 🎬</h1>
+            <p>¡Cupón para una noche de película conmigo!</p>
+			<div class="snack-container">
+				<img src="images/valentina.png" class="salsa-bottle" alt="Valentina">
+				<div class="popcorn">🍿</div>
+			</div>
+        </div>
+
+        <canvas id="scratch-pad"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('scratch-pad');
+        const ctx = canvas.getContext('2d');
+        const container = document.querySelector('.scratch-card-container');
+
+        // Set the internal canvas resolution to match its physical CSS size
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+
+        // Draw the "Scratch-Off" coating (A nice silver/grey)
+        ctx.fillStyle = '#b3b3b3'; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Add the instruction text on top of the coating
+        ctx.font = 'bold 24px Arial';
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.fillText('Rasca aquí! 🪙', canvas.width / 2, canvas.height / 2);
+
+        // Setup drawing variables
+        let isDrawing = false;
+
+        // Function to calculate exact touch/mouse position
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            // Handle both touch and mouse coordinates
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function startPosition(e) {
+            isDrawing = true;
+            scratch(e);
+        }
+
+        function endPosition() {
+            isDrawing = false;
+            ctx.beginPath(); // Reset the path so the next click doesn't connect a line
+        }
+
+        function scratch(e) {
+            if (!isDrawing) return;
+            
+            // Prevent scrolling on mobile while scratching
+            e.preventDefault(); 
+
+            const pos = getPos(e);
+
+            // THIS IS THE MAGIC: It erases the canvas instead of drawing on it
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = 45; // The size of the "coin" scratching it
+            ctx.lineCap = 'round'; // Makes the edges smooth
+
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        // Mouse Event Listeners (For Desktop)
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', scratch);
+        canvas.addEventListener('mouseleave', endPosition);
+
+        // Touch Event Listeners (For Mobile)
+        // Adding { passive: false } allows preventDefault() to work safely on mobile
+        canvas.addEventListener('touchstart', startPosition, { passive: false });
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', scratch, { passive: false });
+
+    </script>
+</body>
+</html>
