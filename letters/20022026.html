@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jardín</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: linear-gradient(to bottom, #e3f2fd, #ffffff);
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .instructions {
+            margin-top: 50px;
+            text-align: center;
+            color: #444;
+            pointer-events: none; /* So clicks pass through to the body */
+            z-index: 10;
+        }
+
+        .flower {
+            position: absolute;
+            user-select: none;
+            pointer-events: none;
+            animation: bloom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            font-size: 50px;
+        }
+
+        @keyframes bloom {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            100% { transform: scale(1) rotate(var(--rotation)); opacity: 1; }
+        }
+
+        /* Message that appears after a few clicks */
+        #final-message {
+            position: fixed;
+            bottom: 50px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: #ff4d6d;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 1s;
+			font-size: 12px;
+			z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instructions">
+        <h1>Para tú... 💐</h1>
+        <p>Haga clic en cualquier lugar para plantar una flor</p>
+    </div>
+
+    <div id="final-message" >Cada flor es una razón por la que te amo ❤️</div>
+
+    <script>
+        const flowers = ['🌻', '🌸', '🌹', '🌷', '🌼', '🌺', '🪻', '🦋', '🏵️'];
+        let count = 0;
+
+        document.body.addEventListener('click', (e) => {
+            createFlower(e.clientX, e.clientY);
+        });
+
+        document.body.addEventListener('touchstart', (e) => {
+            // Prevent zooming/scrolling
+            e.preventDefault();
+            createFlower(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+
+        function createFlower(x, y) {
+            count++;
+            const flower = document.createElement('div');
+            flower.className = 'flower';
+            
+            // Pick a random flower
+            flower.innerText = flowers[Math.floor(Math.random() * flowers.length)];
+            
+            // Random rotation for the bloom animation
+            const randomRotation = Math.floor(Math.random() * 360);
+            flower.style.setProperty('--rotation', `${randomRotation}deg`);
+            
+            // Center the emoji on the click
+            flower.style.left = (x - 25) + 'px';
+            flower.style.top = (y - 25) + 'px';
+            
+            document.body.appendChild(flower);
+
+            // Show message after 10 flowers
+            if (count === 5) {
+                document.getElementById('final-message').style.opacity = '1';
+            }
+        }
+    </script>
+</body>
+</html>
