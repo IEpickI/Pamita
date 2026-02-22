@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Written in the Stars</title>
+    <style>
+        body {
+            margin: 0;
+            background: #050510;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            touch-action: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #star-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .instructions {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 15%;
+            color: rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+            z-index: 2;
+            transition: opacity 1s;
+        }
+
+        /* NEW: The dedicated message container at the bottom */
+        #message-container {
+            position: fixed;
+            bottom: 40px;
+            width: 85%;
+            min-height: 60px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            font-size: 1.1rem;
+            line-height: 1.4;
+            z-index: 3;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        }
+
+        .word-glow {
+            display: inline-block;
+            margin: 0 4px;
+            animation: word-appear 0.5s ease-out forwards;
+            text-shadow: 0 0 10px rgba(255,255,255,0.8);
+        }
+
+        @keyframes word-appear {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instructions" id="guide">Unite the stars to reveal my message...</div>
+    <canvas id="star-canvas"></canvas>
+    <div id="message-container"></div>
+
+    <script>
+        const canvas = document.getElementById('star-canvas');
+        const ctx = canvas.getContext('2d');
+        const guide = document.getElementById('guide');
+        const messageContainer = document.getElementById('message-container');
+
+        const words = ["Cada", "día", "que", "pasa", "es", "un", "paso", "más", "cerca", "de", "volver", "a", "verte.", "No", "importa", "la", "distancia,", "siempre", "estamos", "bajo", "el", "mismo", "cielo.", "Te", "amo."];
+        const stars = [];
+        let visitedStars = [];
+        let currentWordIndex = 0;
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2 - 50; // Shifted up slightly to clear the message box
+            
+            const scale = Math.min(canvas.width, canvas.height) / 45;
+
+            words.forEach((word, i) => {
+                const t = (i / words.length) * Math.PI * 2 - Math.PI;
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+
+                stars.push({
+                    x: centerX + x * scale,
+                    y: centerY + y * scale,
+                    word: word,
+                    revealed: false,
+                    id: i
+                });
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 1. Draw connection lines
+            if (visitedStars.length > 1) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.moveTo(visitedStars[0].x, visitedStars[0].y);
+                for (let i = 1; i < visitedStars.length; i++) {
+                    ctx.lineTo(visitedStars[i].x, visitedStars[i].y);
+                }
+                
+                // If finished, close the heart
+                if (currentWordIndex === words.length) {
+                    ctx.lineTo(visitedStars[0].x, visitedStars[0].y);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                }
+                ctx.stroke();
+            }
+
+            // 2. Draw stars
+            stars.forEach(star => {
+                const isNext = star.id === currentWordIndex;
+                
+                ctx.beginPath();
+                const pulse = isNext ? Math.sin(Date.now() / 200) * 2 : 0;
+                ctx.arc(star.x, star.y, (star.revealed ? 4 : 2) + pulse, 0, Math.PI * 2);
+                
+                ctx.fillStyle = star.revealed ? '#fff' : (isNext ? '#fff' : 'rgba(255, 255, 255, 0.2)');
+                ctx.shadowBlur = (star.revealed || isNext) ? 15 : 0;
+                ctx.shadowColor = "white";
+                ctx.fill();
+            });
+            requestAnimationFrame(draw);
+        }
+
+        function handleMove(e) {
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const targetStar = stars[currentWordIndex];
+            
+            if (targetStar) {
+                const dist = Math.hypot(targetStar.x - x, targetStar.y - y);
+                if (dist < 10) {
+                    targetStar.revealed = true;
+                    visitedStars.push(targetStar);
+                    
+                    // Add word to the bottom container
+                    const span = document.createElement('span');
+                    span.className = 'word-glow';
+                    span.innerText = targetStar.word;
+                    messageContainer.appendChild(span);
+
+                    currentWordIndex++;
+                    guide.style.opacity = 0;
+                }
+            }
+        }
+
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchstart', handleMove, {passive: false});
+        window.addEventListener('touchmove', handleMove, {passive: false});
+        window.addEventListener('resize', init);
+
+        init();
+        draw();
+    </script>
+</body>
+</html>
