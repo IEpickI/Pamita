@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #1a1a1a;
+            font-family: 'Courier New', Courier, monospace;
+            color: #555;
+            overflow: hidden;
+        }
+
+        .polaroid {
+            background: white;
+            padding: 15px 15px 60px 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border-radius: 2px;
+            transform: rotate(-3deg);
+            transition: transform 0.1s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .photo-container {
+            width: 250px;
+            height: 250px;
+            background: #333; /* The "undeveloped" look */
+            overflow: hidden;
+            position: relative;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Start blurry and invisible */
+            filter: blur(20px) grayscale(100%);
+            opacity: 0;
+            transition: filter 0.5s linear, opacity 0.5s linear;
+            pointer-events: none;
+        }
+
+        .caption {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 2s;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 10%;
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="polaroid" id="card">
+        <div class="photo-container">
+            <img src="images/IMG_2899.jpg" id="photo">
+        </div>
+        <div class="caption" id="caption">I miss you every day</div>
+    </div>
+
+    <div class="hint" id="hint">Shake it</div>
+
+    <script>
+        const card = document.getElementById('card');
+        const photo = document.getElementById('photo');
+        const caption = document.getElementById('caption');
+        const hint = document.getElementById('hint');
+        
+        let progress = 0; // 0 to 100
+        let lastX, lastY;
+
+        function updateDevelopment(amount) {
+            progress += amount;
+            if (progress > 100) progress = 100;
+
+            // Update visual state
+            // Blur goes from 20px down to 0
+            const blurVal = 20 - (20 * (progress / 100));
+            // Opacity goes from 0 to 1
+            const opacityVal = progress / 100;
+            // Grayscale goes from 100% to 0%
+            const grayVal = 100 - progress;
+
+            photo.style.filter = `blur(${blurVal}px) grayscale(${grayVal}%)`;
+            photo.style.opacity = opacityVal;
+
+            if (progress >= 100) {
+                caption.style.opacity = "1";
+                hint.style.opacity = "0";
+                card.style.transform = "rotate(0deg) scale(1.1)";
+            }
+        }
+
+        // Mouse interaction
+        window.addEventListener('mousemove', (e) => {
+            if (progress < 100) {
+                const speed = Math.abs(e.movementX) + Math.abs(e.movementY);
+                if (speed > 5) {
+                    updateDevelopment(0.25);
+                    // Add a tiny wiggle
+                    card.style.transform = `rotate(${Math.random() * 10 - 2}deg)`;
+                }
+            }
+        });
+
+        // Touch interaction (Mobile)
+        window.addEventListener('touchmove', (e) => {
+            if (progress < 100) {
+                updateDevelopment(0.25);
+                card.style.transform = `rotate(${Math.random() * 12 - 3}deg)`;
+            }
+        });
+    </script>
+</body>
+</html>
