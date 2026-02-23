@@ -111,9 +111,9 @@
             if (progress < 100) {
                 const speed = Math.abs(e.movementX) + Math.abs(e.movementY);
                 if (speed > 5) {
-                    updateDevelopment(0.25);
+                    updateDevelopment(0.5);
                     // Add a tiny wiggle
-                    card.style.transform = `rotate(${Math.random() * 10 - 2}deg)`;
+                    card.style.transform = `rotate(${Math.random() * 5 - 2}deg)`;
                 }
             }
         });
@@ -121,8 +121,8 @@
         // Touch interaction (Mobile)
         window.addEventListener('touchmove', (e) => {
             if (progress < 100) {
-                updateDevelopment(0.25);
-                card.style.transform = `rotate(${Math.random() * 12 - 3}deg)`;
+                updateDevelopment(0.5);
+                card.style.transform = `rotate(${Math.random() * 6 - 3}deg)`;
             }
         });
     </script>
