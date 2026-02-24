@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Hilo Rojo</title>
+    <style>
+        /* Make the page super tall so she has to scroll */
+        body {
+            margin: 0;
+            height: 400vh; /* 4 times the height of the screen */
+            background: #fdfcfaf0; /* Very soft, warm off-white */
+            font-family: 'Georgia', serif;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* The SVG is fixed to the screen so it stays in view while she scrolls */
+        #svg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none; /* Lets her touch/scroll through the SVG */
+        }
+
+        /* The Red Thread */
+        #thread-path {
+            fill: none;
+            stroke: #e63946; /* Deep crimson red */
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Text styling */
+        .instruction {
+            position: fixed;
+            top: 15%;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: breathe 3s infinite ease-in-out;
+            z-index: 0;
+        }
+
+        .message-container {
+            position: fixed;
+            bottom: 5%;
+            width: 100%;
+            text-align: center;
+            z-index: 2;
+        }
+
+        #final-message {
+            max-width: 80%;
+            margin: 0 auto;
+            font-size: 1.3rem;
+            line-height: 1.6;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instruction" id="guide">Desliza hacia abajo</div>
+
+    <svg id="svg-container" viewBox="0 0 100 150" preserveAspectRatio="xMidYMid meet">
+        <path id="thread-path" d="M 50, -10 
+                                  C 110, 30 -10, 60 50, 95 
+                                  C 75, 80 105, 110 50, 140 
+                                  C -5, 110 25, 80 50, 95" />
+    </svg>
+
+    <div class="message-container">
+        <div id="final-message">
+            El hilo rojo puede estirarse de Praga a México, <br><strong>pero nunca romperse.</strong>
+        </div>
+    </div>
+
+    <script>
+        const path = document.getElementById('thread-path');
+        const message = document.getElementById('final-message');
+        const guide = document.getElementById('guide');
+        
+        // Get the total length of the SVG path
+        const pathLength = path.getTotalLength();
+
+        // Setup the path to be initially "hidden" using dash offsets
+        path.style.strokeDasharray = pathLength;
+        path.style.strokeDashoffset = pathLength;
+
+        // Listen for the user scrolling
+        window.addEventListener('scroll', () => {
+            // Calculate how far down the user has scrolled as a percentage (0.0 to 1.0)
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercentage = scrollTop / scrollHeight;
+
+            // Draw the line based on the scroll percentage
+            const drawLength = pathLength * scrollPercentage;
+            path.style.strokeDashoffset = pathLength - drawLength;
+
+            // Fade out the instruction early on
+            if (scrollPercentage > 0.1) {
+                guide.style.opacity = 0;
+                guide.style.transition = "opacity 1s";
+            }
+
+            // Reveal the final message when she reaches the bottom (95% scrolled)
+            if (scrollPercentage > 0.95) {
+                message.style.opacity = 1;
+                message.style.transform = "translateY(0)";
+            } else {
+                message.style.opacity = 0;
+                message.style.transform = "translateY(20px)";
+            }
+        });
+    </script>
+</body>
+</html>
