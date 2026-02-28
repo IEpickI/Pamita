@@ -3,87 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Un secreto para tú</title>
+    <title>Cipher</title>
     <style>
         body {
             margin: 0;
-            padding: 0;
-            background-color: #0d0d12; /* Deep, mysterious dark blue-black */
+            background-color: #0d0d12;
             color: #e2e8f0;
-            font-family: 'Georgia', serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
         }
 
-        /* The hint - this stays normal so she can read the instructions */
-        .instruction {
-            font-size: 0.8rem;
-            color: #64748b;
+        h2 {
+            font-weight: 300;
+            letter-spacing: 4px;
+            margin-top: 40px;
+            color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 50px;
-            animation: pulse 2s infinite ease-in-out;
+            font-size: 0.8rem;
         }
 
-        /* The Mirror Secret - This is what gets flipped */
-        .mirror-content {
-            transform: scaleX(-1); /* The Magic: This flips the entire block horizontally */
-            max-width: 80%;
-            font-size: 1.5rem;
-            line-height: 1.6;
-            filter: blur(0.5px); /* Adds a slight "dreamy" look to the backwards text */
-            opacity: 0.9;
+        /* The Result Display (T E A M O) */
+        .result-container {
+            display: flex;
+            gap: 15px;
+            margin: 40px 0;
         }
 
-        /* Subtle glow for the secret message */
-        .mirror-content p {
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-            margin: 20px 0;
-        }
-
-        .heart {
+        .letter-box {
+            width: 45px;
+            height: 60px;
+            border-bottom: 2px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 2rem;
-            margin-top: 30px;
-            display: block;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            color: transparent;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
+        .letter-box.revealed {
+            color: #fb7185; /* Soft rose color */
+            border-bottom-color: #fb7185;
+            text-shadow: 0 0 15px rgba(251, 113, 133, 0.5);
         }
 
-        /* Decorative elements */
-        .corner {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* Puzzle Rows */
+        .puzzle-grid {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
         }
-        .top-left { top: 20px; left: 20px; border-right: none; border-bottom: none; }
-        .bottom-right { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
+        .row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .clue {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        input {
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #fb7185;
+        }
+
+        input.correct {
+            border-color: #10b981;
+            background: #064e3b33;
+        }
+
+        #final-msg {
+            margin-top: 40px;
+            opacity: 0;
+            transition: opacity 1s;
+            text-align: center;
+            font-style: italic;
+            color: #94a3b8;
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="corner top-left"></div>
-    <div class="corner bottom-right"></div>
+    <h2>(write answers in english)</h2>
 
-    <div class="instruction">
-        Encuentra un espejo...
+    <div class="result-container">
+        <div class="letter-box" id="box-0">T</div>
+        <div class="letter-box" id="box-1">E</div>
+        <div class="letter-box" id="box-2">A</div>
+        <div class="letter-box" id="box-3">M</div>
+        <div class="letter-box" id="box-4">O</div>
     </div>
 
-    <div class="mirror-content">
-        <p>Mi amor,</p>
-        <p>Incluso cuando todo parece al revés,</p>
-        <p>mi amor por ti es lo único claro.</p>
-        <p>Te extraño cada segundo.</p>
-        <span class="heart">❤️</span>
+    <div class="puzzle-grid">
+        <div class="row">
+            <span class="clue">1. Nombre de mi oso de peluche...</span>
+            <input type="text" placeholder="Respuesta" oninput="check(0, this, ['tobi', 'toby'])">
+        </div>
+        <div class="row">
+            <span class="clue">2. Primera comida que cocinamos juntos...</span>
+            <input type="text" placeholder="Respuesta" oninput="check(1, this, ['burger', 'hamburguesa'])">
+        </div>
+        <div class="row">
+            <span class="clue">3. El color de mis ojos...</span>
+            <input type="text" placeholder="Respuesta" oninput="check(2, this, ['hazel', 'avellana'])">
+        </div>
+        <div class="row">
+            <span class="clue">4. Nombre de los pancakes de papa checos...</span>
+            <input type="text" placeholder="Respuesta" oninput="check(3, this, ['bramboraky', 'bramboráky'])">
+        </div>
+        <div class="row">
+            <span class="clue">5. Nombre del gato que durmió conmigo hoy...</span>
+            <input type="text" placeholder="Respuesta" oninput="check(4, this, ['zolik', 'žolík'])">
+        </div>
     </div>
 
+    <div id="final-msg">Lo lograste. Te extraño cada día. ❤️</div>
+
+    <script>
+        let solved = [false, false, false, false, false];
+
+        function check(index, inputElement, validAnswers) {
+            const val = inputElement.value.toLowerCase().trim();
+            
+            if (validAnswers.includes(val)) {
+                inputElement.classList.add('correct');
+                inputElement.disabled = true;
+                document.getElementById(`box-${index}`).classList.add('revealed');
+                solved[index] = true;
+                
+                checkAllDone();
+            }
+        }
+
+        function checkAllDone() {
+            if (solved.every(s => s === true)) {
+                document.getElementById('final-msg').style.opacity = 1;
+                // Tiny vibration if supported
+                if (window.navigator.vibrate) window.navigator.vibrate([100, 30, 100]);
+            }
+        }
+    </script>
 </body>
 </html>
