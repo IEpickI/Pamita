@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bloom</title>
+    <style>
+        :root {
+            --bg: #0f172a; /* Elegant dark slate */
+            --stem: #22c55e;
+            --petal-light: #6dbcc7;
+            --petal-dark: #1c66b0;
+            --center: #facc15;
+            --text: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+            /* Critical for mobile: stops accidental scrolling/highlighting */
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        #instruction {
+            position: absolute;
+            top: 15%;
+            color: #94a3b8;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-align: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* The Scene Container */
+        #scene {
+            position: absolute;
+            bottom: 25%;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* The Seed */
+        #seed {
+            position: absolute;
+            bottom: -5px;
+            width: 20px;
+            height: 12px;
+            background-color: #451a03; /* Deep earth brown */
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        /* The Stem */
+        #stem {
+            position: absolute;
+            bottom: 0;
+            width: 6px;
+            height: 250px; /* Max height */
+            background: linear-gradient(to top, #14532d, var(--stem));
+            border-radius: 3px;
+            transform-origin: bottom center;
+            transform: scaleY(0); /* Starts at 0 height */
+            z-index: 1;
+        }
+
+        /* The Flower Head (anchored to top of stem) */
+        #flower-head {
+            position: absolute;
+            bottom: 245px; /* Sits right at the top of the stem */
+            width: 0;
+            height: 0;
+            z-index: 5;
+        }
+
+        /* Petal Structure */
+        .petal {
+            position: absolute;
+            bottom: 0;
+            left: -35px; /* Center it horizontally (width/2) */
+            width: 70px;
+            height: 130px;
+            background: linear-gradient(to top, var(--petal-dark), var(--petal-light));
+            border-radius: 50% 50% 20% 20%;
+            transform-origin: bottom center;
+            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.3), 0 0 15px rgba(251, 113, 133, 0.4);
+            display: flex;
+            justify-content: center;
+            transform: scale(0); /* Starts hidden */
+        }
+
+        /* The Letter on the Petal */
+        .letter {
+            position: absolute;
+            top: 25px; /* Positioned near the tip of the petal */
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            opacity: 0; /* Hidden until fully bloomed */
+            transition: opacity 0.8s ease;
+        }
+
+        /* Flower Center */
+        #flower-center {
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #fef08a, var(--center));
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--center);
+            transform: scale(0);
+            z-index: 10;
+        }
+
+        /* Final Subtitle Message */
+        #final-message {
+            position: absolute;
+            bottom: 10%;
+            color: var(--petal-light);
+            font-size: 1.2rem;
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 2s ease;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="instruction">Mantén presionado</div>
+
+    <div id="scene">
+        <div id="seed"></div>
+        <div id="stem"></div>
+        <div id="flower-head">
+            <div class="petal" data-angle="0"><span class="letter">T</span></div>
+            <div class="petal" data-angle="72"><span class="letter">E</span></div>
+            <div class="petal" data-angle="144"><span class="letter">A</span></div>
+            <div class="petal" data-angle="216"><span class="letter">M</span></div>
+            <div class="petal" data-angle="288"><span class="letter">O</span></div>
+            <div id="flower-center"></div>
+        </div>
+    </div>
+
+    <div id="final-message">Mi único plan es que tu mirada sea lo primero que vea en la mañana siempre, para siempre.</div>
+
+    <script>
+        const body = document.body;
+        const stem = document.getElementById('stem');
+        const seed = document.getElementById('seed');
+        const petals = document.querySelectorAll('.petal');
+        const flowerCenter = document.getElementById('flower-center');
+        const instruction = document.getElementById('instruction');
+        const finalMessage = document.getElementById('final-message');
+
+        let isHolding = false;
+        let growth = 0; // 0 to 100
+        let isFullyBloomed = false;
+        let animationFrame;
+
+        // Listeners for mobile and desktop
+        body.addEventListener('touchstart', startGrowth, {passive: false});
+        body.addEventListener('mousedown', startGrowth);
+        
+        body.addEventListener('touchend', stopGrowth);
+        body.addEventListener('mouseup', stopGrowth);
+        body.addEventListener('mouseleave', stopGrowth);
+
+        function startGrowth() {
+            if (isFullyBloomed) return;
+            isHolding = true;
+            instruction.style.opacity = '0'; 
+            cancelAnimationFrame(animationFrame);
+            growLoop();
+        }
+
+        function stopGrowth() {
+            if (isFullyBloomed) return;
+            isHolding = false;
+            instruction.style.opacity = '1'; 
+            cancelAnimationFrame(animationFrame);
+            growLoop();
+        }
+
+        function growLoop() {
+            if (isHolding) {
+                growth += 0.25; // Growth speed
+            } else {
+                growth -= 0.5; // Wilt speed
+            }
+
+            if (growth < 0) growth = 0;
+            if (growth >= 100) {
+                growth = 100;
+                updateVisuals(growth);
+                triggerBloom();
+                return; 
+            }
+
+            updateVisuals(growth);
+
+            if (growth > 0 && growth < 100) {
+                animationFrame = requestAnimationFrame(growLoop);
+            }
+        }
+
+        function updateVisuals(g) {
+            // 1. Stem grows from 0% to 60% of the timeline
+            let stemProgress = Math.min(g / 60, 1);
+            stem.style.transform = `scaleY(${stemProgress})`;
+            
+            // 2. Flower blooms from 60% to 100% of the timeline
+            let bloomProgress = 0;
+            if (g > 60) {
+                bloomProgress = (g - 60) / 40;
+            }
+
+            // Scale up the yellow center
+            flowerCenter.style.transform = `scale(${bloomProgress})`;
+
+            // Fan out the petals
+            petals.forEach(petal => {
+                const targetAngle = parseInt(petal.dataset.angle);
+                // Rotate from 0 to target angle as it blooms
+                const currentAngle = targetAngle * bloomProgress;
+                const scale = bloomProgress;
+                
+                petal.style.transform = `scale(${scale}) rotate(${currentAngle}deg)`;
+                
+                // Counter-rotate the letter inside so it always stays upright!
+                const letter = petal.querySelector('.letter');
+                letter.style.transform = `rotate(${-currentAngle}deg)`;
+            });
+        }
+
+        function triggerBloom() {
+            isFullyBloomed = true;
+            
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate([50, 50, 100]);
+            }
+
+            // Fade in the letters on the petals
+            document.querySelectorAll('.letter').forEach(letter => {
+                letter.style.opacity = '1';
+            });
+
+            // Show the final message
+            finalMessage.style.opacity = '1';
+        }
+    </script>
+</body>
+</html>
