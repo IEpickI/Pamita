@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sopa de Letras - Misterio</title>
+    <style>
+        :root {
+            --bg: #050509;
+            --cell-bg: #111119;
+            --accent: #e11d48; 
+            --msg: #fbbf24; 
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg);
+            color: #a1a1aa;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            touch-action: manipulation;
+            min-height: 100vh;
+        }
+
+        h2 { font-weight: 300; letter-spacing: 4px; margin: 40px 0 10px 0; color: #f1f5f9; text-transform: uppercase; }
+        #instruction { font-size: 0.8rem; color: #64748b; margin-bottom: 30px; }
+        #grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; max-width: 95vw; }
+
+        .cell {
+            width: 33px; height: 33px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--cell-bg); border-radius: 2px;
+            font-size: 1rem; font-weight: bold; color: #27272a; 
+            transition: all 0.3s ease; user-select: none;
+        }
+
+        .cell.selected { background: var(--accent); color: white; transform: scale(1.1); z-index: 2;}
+        .cell.found { color: #4b5563; background: #1e293b; }
+        .cell.reveal { background: transparent; color: var(--msg) !important; font-size: 1.2rem; text-shadow: 0 0 15px var(--msg); opacity: 1 !important; }
+
+        #final-text { margin-top: 30px; color: var(--msg); font-family: serif; font-style: italic; opacity: 0; transition: opacity 2s; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <h2>Sopa Misteriosa</h2>
+    <div id="instruction">Encuentra 5 palabras para leer el secreto...</div>
+
+    <div id="grid"></div>
+    <div id="final-text">I love you and miss you every day</div>
+
+    <script>
+        const ROWS = 10;
+        const COLS = 10;
+        
+        const secretWords = {
+            MEXICO:     [[0,2],[0,3],[0,4],[0,5],[0,6],[0,7]],
+            CHECO:      [[1,1],[2,1],[3,1],[4,1],[5,1]],
+            BESOS:      [[0,9],[1,9],[2,9],[3,9],[4,9]],
+            DISTANCIA:  [[6,8],[6,7],[6,6],[6,5],[6,4],[6,3],[6,2],[6,1],[6,0]],
+            APAPACHAR:  [[9,0],[9,1],[9,2],[9,3],[9,4],[9,5],[9,6],[9,7],[9,8]]
+        };
+
+        const finalMsgStr = "ILOVEYOUANDMISSYOUEVERYDAY";
+        let foundWords = [];
+        let firstSelection = null;
+        const gridData = Array(ROWS).fill().map(() => Array(COLS).fill(null));
+
+        // 1. Initialize
+        for(let r=0; r<ROWS; r++) {
+            for(let c=0; c<COLS; c++) {
+                gridData[r][c] = { char: '', isWord: false, isMsg: false };
+            }
+        }
+
+        // 2. Place Secret Words
+        Object.entries(secretWords).forEach(([word, coords]) => {
+            coords.forEach(([r, c], i) => {
+                gridData[r][c].char = word[i];
+                gridData[r][c].isWord = true;
+            });
+        });
+
+        // 3. DISTRIBUTE MESSAGE ACROSS ALL EMPTY SLOTS
+        // First, find all empty slots in order
+        let emptySlots = [];
+        for(let r=0; r<ROWS; r++) {
+            for(let c=0; c<COLS; c++) {
+                if(!gridData[r][c].isWord) emptySlots.push({r, c});
+            }
+        }
+
+        // Calculate a "step" to spread the message letters
+        // This ensures the message starts near the top and ends near the bottom
+        const step = emptySlots.length / finalMsgStr.length;
+        let msgCharIdx = 0;
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        for(let i = 0; i < emptySlots.length; i++) {
+            const slot = emptySlots[i];
+            // If the current index matches our stepped calculation, place a message letter
+            if (msgCharIdx < finalMsgStr.length && i >= Math.floor(msgCharIdx * step)) {
+                gridData[slot.r][slot.c].char = finalMsgStr[msgCharIdx];
+                gridData[slot.r][slot.c].isMsg = true;
+                msgCharIdx++;
+            } else {
+                // Otherwise, fill with noise
+                gridData[slot.r][slot.c].char = alphabet[Math.floor(Math.random() * alphabet.length)];
+            }
+        }
+
+        // 4. Render
+        const gridEl = document.getElementById('grid');
+        gridData.forEach((row, r) => {
+            row.forEach((cell, c) => {
+                const div = document.createElement('div');
+                div.className = 'cell';
+                div.textContent = cell.char;
+                div.dataset.r = r;
+                div.dataset.c = c;
+                div.onclick = () => handleTap(r, c, div);
+                gridEl.appendChild(div);
+            });
+        });
+
+        function handleTap(r, c, el) {
+            if (el.classList.contains('found')) return;
+            if (!firstSelection) {
+                firstSelection = { r, c, el };
+                el.classList.add('selected');
+            } else {
+                checkPair(firstSelection.r, firstSelection.c, r, c);
+                firstSelection.el.classList.remove('selected');
+                firstSelection = null;
+            }
+        }
+
+        function checkPair(r1, c1, r2, c2) {
+            Object.entries(secretWords).forEach(([word, coords]) => {
+                const start = coords[0];
+                const end = coords[coords.length - 1];
+                const match = (r1==start[0] && c1==start[1] && r2==end[0] && c2==end[1]) ||
+                              (r2==start[0] && c2==start[1] && r1==end[0] && c1==end[1]);
+                
+                if (match && !foundWords.includes(word)) {
+                    foundWords.push(word);
+                    coords.forEach(([row, col]) => {
+                        document.querySelector(`[data-r="${row}"][data-c="${col}"]`).classList.add('found');
+                    });
+                    if (foundWords.length === 5) revealAll();
+                }
+            });
+        }
+
+        function revealAll() {
+            document.querySelectorAll('.cell').forEach(el => {
+                const r = el.dataset.r;
+                const c = el.dataset.c;
+                if (gridData[r][c].isMsg) {
+                    el.classList.add('reveal');
+                } else {
+                    el.style.opacity = '0.05';
+                    el.classList.remove('found');
+                }
+            });
+            //document.getElementById('final-text').style.opacity = 1;
+            if (window.navigator.vibrate) window.navigator.vibrate([100, 50, 100]);
+        }
+    </script>
+</body>
+</html>
