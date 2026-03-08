@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corazones</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:system-ui, Arial;
+    text-align:center;
+    background:#ffeef5;
+}
+
+h1{
+    color:#ff4f8b;
+    margin-top:15px;
+}
+
+#game{
+    position:relative;
+    width:100%;
+    max-width:420px;
+    height:500px;
+    margin:20px auto;
+    background:#fff5f9;
+    overflow:hidden;
+    border-radius:15px;
+}
+
+.heart{
+    position:absolute;
+    font-size:28px;
+}
+
+#basket{
+    position:absolute;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:40px;
+}
+
+#score{
+    font-size:18px;
+    margin-top:5px;
+}
+
+#message{
+    font-size:22px;
+    color:#ff4f8b;
+    margin-top:15px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Atrapa los corazones ❤️</h1>
+<div id="score">Corazones: 0 / 10</div>
+
+<div id="game">
+    <div id="basket">🧺</div>
+</div>
+
+<div id="message"></div>
+
+<script>
+
+const game = document.getElementById("game")
+const basket = document.getElementById("basket")
+const scoreText = document.getElementById("score")
+const message = document.getElementById("message")
+
+let heartsCaught = 0
+let basketX = game.offsetWidth / 2
+
+function spawnHeart(){
+
+    const heart = document.createElement("div")
+    heart.className = "heart"
+    heart.innerHTML = "❤️"
+
+    const startX = Math.random() * (game.offsetWidth - 30)
+    heart.style.left = startX + "px"
+    heart.style.top = "-30px"
+
+    game.appendChild(heart)
+
+    let y = -30
+
+    const fall = setInterval(()=>{
+
+        y += 3
+        heart.style.top = y + "px"
+
+        const heartRect = heart.getBoundingClientRect()
+        const basketRect = basket.getBoundingClientRect()
+
+        if(
+            heartRect.bottom >= basketRect.top &&
+            heartRect.left < basketRect.right &&
+            heartRect.right > basketRect.left
+        ){
+            heartsCaught++
+            scoreText.innerText = "Hearts: " + heartsCaught + " / 10"
+            heart.remove()
+            clearInterval(fall)
+
+            if(heartsCaught >= 10){
+                message.innerText = "¡Atrapaste todo mi amor! ❤️"
+                clearInterval(spawnLoop)
+            }
+
+        }
+
+        if(y > game.offsetHeight){
+            heart.remove()
+            clearInterval(fall)
+        }
+
+    },20)
+
+}
+
+const spawnLoop = setInterval(spawnHeart,900)
+
+game.addEventListener("touchmove", e => {
+
+    const rect = game.getBoundingClientRect()
+    const touchX = e.touches[0].clientX - rect.left
+
+    basketX = touchX
+    basket.style.left = basketX + "px"
+
+})
+
+game.addEventListener("mousemove", e => {
+
+    const rect = game.getBoundingClientRect()
+    const mouseX = e.clientX - rect.left
+
+    basketX = mouseX
+    basket.style.left = basketX + "px"
+
+})
+
+</script>
+
+</body>
+</html>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Corazones</title>
+<title>Flores para ti</title>
 
 <style>
 
@@ -12,46 +12,53 @@ body{
     font-family:system-ui, Arial;
     text-align:center;
     background:#ffeef5;
+    padding:20px;
 }
 
 h1{
     color:#ff4f8b;
-    margin-top:15px;
 }
 
 #game{
-    position:relative;
-    width:100%;
     max-width:420px;
-    height:500px;
-    margin:20px auto;
-    background:#fff5f9;
-    overflow:hidden;
-    border-radius:15px;
+    margin:auto;
 }
 
-.heart{
-    position:absolute;
-    font-size:28px;
+#flowers{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:15px;
+    margin-top:20px;
 }
 
-#basket{
-    position:absolute;
-    bottom:10px;
-    left:50%;
-    transform:translateX(-50%);
+.flower{
     font-size:40px;
+    cursor:pointer;
+    transition:transform 0.2s;
 }
 
-#score{
-    font-size:18px;
-    margin-top:5px;
+.flower:active{
+    transform:scale(0.85);
+}
+
+#bouquet{
+    margin-top:25px;
+    font-size:36px;
+    min-height:45px;
 }
 
 #message{
+    margin-top:20px;
+    font-size:18px;
+    color:#444;
+    min-height:40px;
+}
+
+#final{
+    margin-top:25px;
     font-size:22px;
     color:#ff4f8b;
-    margin-top:15px;
 }
 
 </style>
@@ -59,92 +66,65 @@ h1{
 
 <body>
 
-<h1>Atrapa los corazones ❤️</h1>
-<div id="score">Corazones: 0 / 10</div>
-
 <div id="game">
-    <div id="basket">🧺</div>
+
+<h1>Flores para tú 🌸</h1>
+<p>Toca las flores para crear un ramo.</p>
+
+<div id="flowers">
+<span class="flower">🌸</span>
+<span class="flower">🌹</span>
+<span class="flower">🌷</span>
+<span class="flower">🌻</span>
+<span class="flower">🌼</span>
 </div>
+
+<div id="bouquet"></div>
 
 <div id="message"></div>
 
+<div id="final"></div>
+
+</div>
+
 <script>
 
-const game = document.getElementById("game")
-const basket = document.getElementById("basket")
-const scoreText = document.getElementById("score")
+const flowers = document.querySelectorAll(".flower")
+const bouquet = document.getElementById("bouquet")
 const message = document.getElementById("message")
+const final = document.getElementById("final")
 
-let heartsCaught = 0
-let basketX = game.offsetWidth / 2
+let collected = 0
 
-function spawnHeart(){
+const messages = [
+"Porque eres increíble",
+"Porque eres hermosa",
+"Porque eres fuerte",
+"Por tu hermosa sonrisa",
+"Por ser tú"
+]
 
-    const heart = document.createElement("div")
-    heart.className = "heart"
-    heart.innerHTML = "❤️"
+flowers.forEach((flower,i)=>{
 
-    const startX = Math.random() * (game.offsetWidth - 30)
-    heart.style.left = startX + "px"
-    heart.style.top = "-30px"
+flower.addEventListener("click",()=>{
 
-    game.appendChild(heart)
+if(flower.style.opacity==="0.3") return
 
-    let y = -30
+flower.style.opacity="0.3"
+bouquet.innerHTML += flower.innerHTML
 
-    const fall = setInterval(()=>{
+message.innerText = messages[i]
 
-        y += 3
-        heart.style.top = y + "px"
+collected++
 
-        const heartRect = heart.getBoundingClientRect()
-        const basketRect = basket.getBoundingClientRect()
+if(collected===flowers.length){
 
-        if(
-            heartRect.bottom >= basketRect.top &&
-            heartRect.left < basketRect.right &&
-            heartRect.right > basketRect.left
-        ){
-            heartsCaught++
-            scoreText.innerText = "Hearts: " + heartsCaught + " / 10"
-            heart.remove()
-            clearInterval(fall)
-
-            if(heartsCaught >= 10){
-                message.innerText = "¡Atrapaste todo mi amor! ❤️"
-                clearInterval(spawnLoop)
-            }
-
-        }
-
-        if(y > game.offsetHeight){
-            heart.remove()
-            clearInterval(fall)
-        }
-
-    },20)
+final.innerText =
+"Feliz Día Internacional de la Mujer. Eres increíble ❤️"
 
 }
 
-const spawnLoop = setInterval(spawnHeart,900)
-
-game.addEventListener("touchmove", e => {
-
-    const rect = game.getBoundingClientRect()
-    const touchX = e.touches[0].clientX - rect.left
-
-    basketX = touchX
-    basket.style.left = basketX + "px"
-
 })
-
-game.addEventListener("mousemove", e => {
-
-    const rect = game.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left
-
-    basketX = mouseX
-    basket.style.left = basketX + "px"
 
 })
 
