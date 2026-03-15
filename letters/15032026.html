@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Axolotl Maze</title>
+
+<style>
+
+body{
+margin:0;
+font-family:system-ui;
+text-align:center;
+background:#dff5ff;
+}
+
+h1{
+color:#ff4f8b;
+}
+
+#game{
+position:relative;
+width:90vw;
+max-width:420px;
+height:90vw;
+max-height:420px;
+margin:auto;
+display:grid;
+grid-template-columns:repeat(25,1fr);
+grid-template-rows:repeat(25,1fr);
+background:#9dd2ec;
+border-radius:12px;
+overflow:hidden;
+}
+
+.cell{
+width:100%;
+height:100%;
+}
+
+.wall{
+background:#3a7ca5;
+}
+
+#axolotl{
+position:absolute;
+width:30px;
+pointer-events:none;
+}
+
+#goal{
+position:absolute;
+font-size:28px;
+}
+
+#message{
+margin-top:15px;
+font-size:20px;
+color:#444;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Axolotl Maze</h1>
+<p>Guide the axolotl to the heart.</p>
+
+<div id="game">
+
+	<img src="images/axolotl.png" id="axolotl">
+	<div id="goal">❤️</div>
+</div>
+
+<div id="message"></div>
+
+<script>
+
+/* 25x25 MAZE
+1 = wall
+0 = path */
+
+const maze = [
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,1,0,1],
+  [1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
+  [1,0,1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,0,1],
+  [1,0,1,0,0,0,1,0,1,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,1],
+  [1,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,0,1],
+  [1,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1],
+  [1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1],
+  [1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
+  [1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,0,1],
+  [1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,1],
+  [1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1],
+  [1,0,0,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,0,1],
+  [1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1],
+  [1,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1,0,0,0,0,0,1],
+  [1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,1,1,0,1],
+  [1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1],
+  [1,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1],
+  [1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1],
+  [1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],
+  [1,0,1,0,1,0,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1],
+  [1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+const game = document.getElementById("game")
+const axolotl = document.getElementById("axolotl")
+const goal = document.getElementById("goal")
+const message = document.getElementById("message")
+
+const size = 25
+let cellSize
+
+/* draw maze */
+
+maze.forEach(row=>{
+row.forEach(cell=>{
+const div=document.createElement("div")
+div.className="cell"
+if(cell===1) div.classList.add("wall")
+game.appendChild(div)
+})
+})
+
+function updateSizes(){
+
+cellSize = game.clientWidth/25
+
+axolotl.style.width = cellSize+"px"
+goal.style.width = cellSize+"px"
+goal.style.height = cellSize+"px"
+goal.style.fontSize = cellSize * 0.8 + "px"
+
+}
+
+updateSizes()
+
+/* start position */
+
+let axoX=0
+let axoY=1
+
+/* goal */
+
+let goalX=24
+let goalY=23
+
+function draw(){
+
+axolotl.style.left = (axoX*cellSize)+"px"
+axolotl.style.top = (axoY*cellSize)+"px"
+
+goal.style.left = (goalX*cellSize)+"px"
+goal.style.top = (goalY*cellSize)+"px"
+
+}
+
+draw()
+
+/* movement */
+
+document.addEventListener("touchmove", e => {
+
+const rect = game.getBoundingClientRect()
+
+let x = e.touches[0].clientX - rect.left
+let y = e.touches[0].clientY - rect.top
+
+let gridX = Math.floor(x / cellSize)
+let gridY = Math.floor(y / cellSize)
+
+/* distance from current tile */
+
+let dx = gridX - axoX
+let dy = gridY - axoY
+
+/* only allow moving 1 tile */
+
+if(Math.abs(dx) + Math.abs(dy) === 1){
+
+if(maze[gridY] && maze[gridY][gridX] === 0){
+
+axoX = gridX
+axoY = gridY
+
+draw()
+
+checkGoal()
+
+}
+
+}
+
+})
+
+function checkGoal(){
+
+if(axoX===goalX && axoY===goalY){
+
+message.innerText="Axolotl found its way to you ❤️"
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
