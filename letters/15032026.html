@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Axolotl Maze</title>
+<title>Achiota Maze</title>
 
 <style>
 
@@ -59,14 +59,34 @@ margin-top:15px;
 font-size:20px;
 color:#444;
 }
+#controls{
+margin-top:20px;
+display:grid;
+grid-template-columns:repeat(3,80px);
+gap:10px;
+justify-content:center;
+}
+
+#controls button{
+font-size:28px;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#ff77a8;
+color:white;
+}
+
+#controls button:active{
+transform:scale(0.95);
+}
 
 </style>
 </head>
 
 <body>
 
-<h1>Axolotl Maze</h1>
-<p>Guide the axolotl to the heart.</p>
+<h1>Achiota Maze</h1>
+<p>Guide Achiota to your heart.</p>
 
 <div id="game">
 
@@ -75,6 +95,22 @@ color:#444;
 </div>
 
 <div id="message"></div>
+
+<div id="controls">
+
+<div></div>
+<button onclick="move(0,-1)">⬆</button>
+<div></div>
+
+<button onclick="move(-1,0)">⬅</button>
+<div></div>
+<button onclick="move(1,0)">➡</button>
+
+<div></div>
+<button onclick="move(0,1)">⬇</button>
+<div></div>
+
+</div>
 
 <script>
 
@@ -114,6 +150,7 @@ const game = document.getElementById("game")
 const axolotl = document.getElementById("axolotl")
 const goal = document.getElementById("goal")
 const message = document.getElementById("message")
+const controls = document.getElementById("controls")
 
 const size = 25
 let cellSize
@@ -166,45 +203,31 @@ draw()
 
 /* movement */
 
-document.addEventListener("touchmove", e => {
-
-const rect = game.getBoundingClientRect()
-
-let x = e.touches[0].clientX - rect.left
-let y = e.touches[0].clientY - rect.top
-
-let gridX = Math.floor(x / cellSize)
-let gridY = Math.floor(y / cellSize)
-
-/* distance from current tile */
-
-let dx = gridX - axoX
-let dy = gridY - axoY
-
-/* only allow moving 1 tile */
-
-if(Math.abs(dx) + Math.abs(dy) === 1){
-
-if(maze[gridY] && maze[gridY][gridX] === 0){
-
-axoX = gridX
-axoY = gridY
-
-draw()
-
-checkGoal()
-
-}
-
-}
-
-})
 
 function checkGoal(){
 
 if(axoX===goalX && axoY===goalY){
 
-message.innerText="Axolotl found its way to you ❤️"
+message.innerText="Achiota found its way to you ❤️"
+controls.style.display="none"
+
+}
+
+}
+
+function move(dx,dy){
+
+let newX = axoX + dx
+let newY = axoY + dy
+
+if(maze[newY] && maze[newY][newX] === 0){
+
+axoX = newX
+axoY = newY
+
+draw()
+
+checkGoal()
 
 }
 
