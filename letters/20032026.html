@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Count the Stars</title>
+
+<style>
+
+body{
+margin:0;
+font-family:system-ui;
+background:linear-gradient(#0b1a2a,#02060f);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+height:100vh;
+color:white;
+text-align:center;
+overflow:hidden;
+}
+
+h1{
+color:#ffd6f0;
+margin-bottom:10px;
+}
+
+#sky{
+position:relative;
+width:100%;
+max-width:420px;
+height:70vh;
+}
+
+.star{
+position:absolute;
+font-size:20px;
+opacity:0.6;
+transition:all 0.3s;
+}
+
+.star.glow{
+opacity:1;
+transform:scale(1.4);
+text-shadow:0 0 10px #fff, 0 0 20px #fff;
+}
+
+#message{
+margin-top:20px;
+font-size:18px;
+min-height:40px;
+color:#ffd6f0;
+}
+
+#message2{
+margin-top:20px;
+font-size:18px;
+min-height:40px;
+color:#ffd6f0;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Count the Stars by tapping them</h1>
+
+<div id="sky"></div>
+
+<div id="message"></div>
+<div id="message2"></div>
+
+<script>
+
+const sky = document.getElementById("sky")
+const message = document.getElementById("message")
+const message2 = document.getElementById("message2")
+
+let tapped = 0
+const target = 25
+
+/* create stars */
+
+const positions = []
+
+const MIN_DISTANCE = 50
+
+const skyRect = sky.getBoundingClientRect()
+
+function isTooClose(x,y){
+for(let pos of positions){
+
+const dx = pos.x - x
+const dy = pos.y - y
+
+if(Math.sqrt(dx*dx + dy*dy) < MIN_DISTANCE){
+return true
+}
+
+}
+return false
+}
+
+/* create stars */
+
+for(let i=0;i<25;i++){
+
+let x, y
+let attempts = 0
+
+do{
+x = Math.random() * skyRect.width
+y = Math.random() * skyRect.height
+attempts++
+}while(isTooClose(x,y) && attempts < 300)
+
+positions.push({x,y})
+
+const star = document.createElement("div")
+star.className = "star"
+star.innerText = "⭐"
+
+/* convert to % for responsive layout */
+star.style.left = (x / skyRect.width * 90) + "%"
+star.style.top = (y / skyRect.height * 90) + "%"
+
+star.style.fontSize = (16 + Math.random()*10) + "px"
+
+star.addEventListener("click",()=>{
+
+if(star.classList.contains("glow")) return
+
+star.classList.add("glow")
+tapped++
+
+if(tapped >= target){
+message.innerText = "That is how many times I thought of you today ❤️"
+message2.innerText = "Te amo muchísimo Pami ❤️ Descansa ❤️"
+}
+
+})
+
+sky.appendChild(star)
+
+}
+
+</script>
+
+</body>
+</html>
