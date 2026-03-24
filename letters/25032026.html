@@ -24,13 +24,19 @@
     aspect-ratio: 1;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 3px;
+    gap: 4px;
   }
 
   .piece {
     background-image: url("images/IMG_2899.jpg");
     background-size: 300% 300%;
-    touch-action: none;
+    border-radius: 6px;
+    transition: transform 0.15s, outline 0.15s;
+  }
+
+  .selected {
+    outline: 3px solid white;
+    transform: scale(0.95);
   }
 
   #message {
@@ -48,15 +54,15 @@
 <body>
 
 <div id="puzzle"></div>
-<div id="message">Te amooooo, Pami ❤️</div>
+<div id="message">Para ti, Pami ❤️</div>
 
 <script>
   const puzzle = document.getElementById("puzzle");
   const message = document.getElementById("message");
 
-  const size = 3; // 3x3 grid
+  const size = 3;
   let pieces = [];
-  let dragged = null;
+  let selected = null;
 
   // create pieces
   for (let y = 0; y < size; y++) {
@@ -65,34 +71,37 @@
       div.classList.add("piece");
 
       div.style.backgroundPosition = `${(x/(size-1))*100}% ${(y/(size-1))*100}%`;
-
       div.dataset.correct = `${x},${y}`;
+
       pieces.push(div);
     }
   }
 
   // shuffle
   pieces.sort(() => Math.random() - 0.5);
-
   pieces.forEach(p => puzzle.appendChild(p));
 
-  // drag logic (touch + mouse)
   pieces.forEach(piece => {
-    piece.addEventListener("pointerdown", () => {
-      dragged = piece;
-      piece.style.opacity = "0.5";
-    });
+    piece.addEventListener("click", () => {
+      if (!selected) {
+        selected = piece;
+        piece.classList.add("selected");
+        return;
+      }
 
-    piece.addEventListener("pointerup", () => {
-      if (!dragged || dragged === piece) return;
+      if (selected === piece) {
+        selected.classList.remove("selected");
+        selected = null;
+        return;
+      }
 
-      // swap
-      let temp = dragged.style.backgroundPosition;
-      dragged.style.backgroundPosition = piece.style.backgroundPosition;
+      // swap positions visually
+      let temp = selected.style.backgroundPosition;
+      selected.style.backgroundPosition = piece.style.backgroundPosition;
       piece.style.backgroundPosition = temp;
 
-      dragged.style.opacity = "1";
-      dragged = null;
+      selected.classList.remove("selected");
+      selected = null;
 
       checkWin();
     });
