@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Axolotl Balloon Party 🎈</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(to top, #a8edea, #fed6e3);
+    font-family: 'Arial', sans-serif;
+    height: 100vh;
+  }
+  .balloon {
+    position: absolute;
+    width: 40px;
+    height: 50px;
+    background: red;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    cursor: pointer;
+  }
+  .balloon::after {
+    content: '';
+    width: 2px;
+    height: 20px;
+    background: #555;
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .heart {
+    position: absolute;
+    color: #ff0000;
+    font-size: 20px;
+    animation: floatHeart 1s forwards;
+  }
+  @keyframes floatHeart {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+  }
+  .axolotl {
+    position: absolute;
+    width: 50px;
+    height: 30px;
+    pointer-events: none;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+<script>
+// Replace these with your Base64 images
+const axolotlImages = [
+  'images/axolotl.png'
+];
+
+const colors = ['#ff6f91', '#ff9671', '#ffc75f', '#f9f871', '#c34a36'];
+const messages = [
+  "Te amo mucho 💖",
+  "Eres mi axolotl favorito 🐾",
+  "Pensando en ti 😘",
+  "Un abrazo virtual 🤗",
+  "Siempre juntos, aunque lejos 💕"
+];
+
+const balloons = [];
+const axolotls = [];
+const totalBalloons = 8;
+const totalAxolotls = 3;
+
+function random(min, max) { return Math.random() * (max - min) + min; }
+
+// Axolotls in background
+for (let i = 0; i < totalAxolotls; i++) {
+  const ax = document.createElement('img');
+  ax.className = 'axolotl';
+  ax.src = axolotlImages[i % axolotlImages.length]; // cycle images
+  ax.style.left = random(0, window.innerWidth - 50) + 'px';
+  ax.style.top = random(0, window.innerHeight - 50) + 'px';
+  document.body.appendChild(ax);
+  axolotls.push(ax);
+}
+
+// Balloons
+for (let i = 0; i < totalBalloons; i++) {
+  const bal = document.createElement('div');
+  bal.className = 'balloon';
+  bal.style.background = colors[Math.floor(random(0, colors.length))];
+  bal.style.left = random(0, window.innerWidth - 40) + 'px';
+  bal.style.top = window.innerHeight + random(0, 200) + 'px';
+  document.body.appendChild(bal);
+  balloons.push(bal);
+  bal.addEventListener('click', () => popBalloon(bal));
+}
+
+function popBalloon(bal) {
+  const heart = document.createElement('div');
+  heart.className = 'heart';
+  heart.style.left = bal.offsetLeft + 5 + 'px';
+  heart.style.top = bal.offsetTop + 'px';
+  heart.textContent = '❤️';
+  document.body.appendChild(heart);
+  setTimeout(() => heart.remove(), 1000);
+
+  const msg = document.createElement('div');
+  msg.style.position = 'absolute';
+  msg.style.left = bal.offsetLeft - 20 + 'px';
+  msg.style.top = bal.offsetTop - 40 + 'px';
+  msg.style.fontSize = '16px';
+  msg.style.color = '#333';
+  msg.textContent = messages[Math.floor(random(0, messages.length))];
+  document.body.appendChild(msg);
+  setTimeout(() => msg.remove(), 2000);
+
+  bal.style.display = 'none';
+}
+
+function animate() {
+  balloons.forEach(bal => {
+    let top = parseFloat(bal.style.top);
+    top -= 1.2;
+    if (top < -60) {
+      top = window.innerHeight + random(0, 200);
+      bal.style.display = 'block';
+    }
+    bal.style.top = top + 'px';
+  });
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
