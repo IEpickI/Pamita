@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You 💖</title>
+<style>
+html, body {
+  height: 100%;
+}
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(#e66465, #9198e5);
+    font-family: Arial, sans-serif;
+    touch-action: none;
+  }
+
+  .heart {
+    position: absolute;
+    font-size: 18px;
+    pointer-events: none;
+    animation: fadeOut 1s forwards;
+  }
+
+  @keyframes fadeOut {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.8); }
+  }
+
+  #message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #d63384;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+
+  #hint {
+    position: fixed;
+    top: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    color: #444;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="hint">Draw on the screen 💕</div>
+<div id="message">I wish I could hug right now 💖</div>
+
+<script>
+let lastTime = 0;
+const delay = 40;
+
+let drawing = false;
+let count = 0;
+
+function createHeart(x, y) {
+  const heart = document.createElement('div');
+  heart.className = 'heart';
+  heart.textContent = '💖';
+  heart.style.left = x + 'px';
+  heart.style.top = y + 'px';
+
+  document.body.appendChild(heart);
+
+  setTimeout(() => heart.remove(), 1000);
+
+  count++;
+  if (count > 80) {
+    document.getElementById('message').style.opacity = 1;
+  }
+}
+
+// Touch events
+document.addEventListener('touchstart', () => drawing = true);
+document.addEventListener('touchend', () => drawing = false);
+
+document.addEventListener('touchmove', (e) => {
+  if (!drawing) return;
+  const t = e.touches[0];
+
+  const now = Date.now();
+  if (now - lastTime > delay)
+  {
+    createHeart(t.clientX, t.clientY);
+    lastTime = now;
+  }
+});
+
+// Mouse fallback
+document.addEventListener('mousedown', () => drawing = true);
+document.addEventListener('mouseup', () => drawing = false);
+
+document.addEventListener('mousemove', (e) => {
+  if (!drawing) return;
+  const now = Date.now();
+  if (now - lastTime > delay) {
+    createHeart(e.clientX, e.clientY);
+    lastTime = now;
+  }
+});
+</script>
+
+</body>
+</html>
